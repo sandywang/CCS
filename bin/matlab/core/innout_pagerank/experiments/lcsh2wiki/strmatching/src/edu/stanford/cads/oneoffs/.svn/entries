@@ -1,0 +1,76 @@
+8
+
+dir
+8
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java/trunk/src/edu/stanford/cads/oneoffs
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java
+
+
+
+2007-10-06T04:35:04.089212Z
+8
+Nathan Sakunkoo
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bf858b66-2738-0410-8cd7-81738de7703c
+
+ExactMatch.java
+file
+
+
+
+
+2007-10-06T04:31:25.640000Z
+5d26b0e0a3cd04382b88f17e6a7526a5
+2007-10-06T04:35:04.089212Z
+8
+Nathan Sakunkoo
+
+LuceneWikipedia2LCSH.java
+file
+
+
+
+
+2007-10-04T03:32:40.765000Z
+86c327b4e40a5b5fc5ef8567ac7ce39e
+2007-10-04T03:35:58.439089Z
+6
+Nathan Sakunkoo
+
+SoftTFIDFAdapter.java
+file
+9
+
+
+
+2007-10-04T04:17:40.984000Z
+53c4ecea7b37b000a5e34d780af9f3c3
+2007-10-20T03:25:19.819028Z
+9
+Nathan Sakunkoo
+
+WordNetAdapter.java
+file
+
+
+
+
+2007-10-04T03:32:40.812000Z
+ee001d43a311446b476f8e332944bfc6
+2007-10-04T03:35:58.439089Z
+6
+Nathan Sakunkoo
+

@@ -1,0 +1,8 @@
+%% Inner-outer and $|\lambda_k|$
+% Let's look at the convergence of the inner outer iteration for some
+% small matrices and the factor $|\lambda_k|$ that may be important.
+
+%% Setup the experiment
+addpath('../../matlab');
+addpath('../../libbvg');
+addpath('../../

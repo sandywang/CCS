@@ -1,0 +1,76 @@
+8
+
+dir
+8
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java/trunk/src/org/apache/lucene/analysis/ngram
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java
+
+
+
+2007-09-25T19:44:53.360021Z
+4
+David Gleich
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bf858b66-2738-0410-8cd7-81738de7703c
+
+EdgeNGramTokenFilter.java
+file
+
+
+
+
+2007-10-04T03:32:12.859000Z
+d37ec0e72a8d3bd2e0654e7e76697873
+2007-09-25T19:44:53.360021Z
+4
+David Gleich
+
+EdgeNGramTokenizer.java
+file
+
+
+
+
+2007-10-04T03:32:12.859000Z
+95dbe3c1dbc2cfcf33514d3ee00163cc
+2007-09-25T19:44:53.360021Z
+4
+David Gleich
+
+NGramTokenFilter.java
+file
+
+
+
+
+2007-10-04T03:32:12.890000Z
+f4612e13fa4a6402f198a292b8f8fc36
+2007-09-25T19:44:53.360021Z
+4
+David Gleich
+
+NGramTokenizer.java
+file
+
+
+
+
+2007-10-04T03:32:12.843000Z
+c5155753af7e4d287166466fbc14c78f
+2007-09-25T19:44:53.360021Z
+4
+David Gleich
+

@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+#################################################################################
+## SCRIPT TO RUN GENERAL RESTING-STATE PREPROCESSING
+##
+## Written by Xindi Wang, Xu Ting and Xi-nian Zuo.
+## Email: sandywang.rest@gmail.com
+## 
+#################################################################################
+#################################################################################
+## PARAMETERS
+#################################################################################
+ADir=$( pwd )
+SubjListName=subject.list
+AnatDir=anat
+AnatName=mprage
+DoDenoise=false
+DoGCut=false
+ScansNum=1
+
+#Directory where scripts are located
+ScriptDir=$CCSDIR/bin
+
+#Full path to the list of subjs
+SubjList=${ADir}/scripts/${SubjListName}
+SkullList=${ADir}/scripts/check_skullstrip.list
+
+#################################################################################
+##---START OF SCRIPT-----------------------------------------------------------##
+#################################################################################
+#set -e
+## Skullstrip stage
+echo "====================$( date )===================="
+echo "Skull strip processing ... (May take more than half an hour for one subject)"
+## Get subjs to run
+subjs=$( cat "${SubjList}" )
+
+## SUBJECT LOOP
+
+## Preprocessing anatomical images
+rm -f ${SkullList}
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {};killall -s SIGTERM -u $USER recon-all;exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	if [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+    then
+		wait
+		num_of_queue=0
+    fi
+	let num_of_queue=num_of_queue+1
+
+	{
+    set -e
+	mkdir -p ${ADir}/${subj}/scripts
+    logfile=${ADir}/${subj}/scripts/ccs_01_anatpreproc.log
+    errfile=${ADir}/${subj}/scripts/ccs_01_anatpreproc.error
+    trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+	if [[ ! -f ${ADir}/${subj}/${AnatDir}/${AnatName}.nii.gz ]]
+	then
+		echo "ERROR: NO anatomical images or directory for ${subj} " >&2
+        exit 1
+	else
+		if [[ ! -f ${logfile} ]]
+		then 
+			echo "-->RUNNING: Skull stripping for ${subj}..."
+			echo "=================================================" >> ${logfile}
+			echo "CCS $( date ) " >> ${logfile}
+			echo "Preprocessing of anatomical images for ${subj} ..." >> ${logfile}
+			echo "=================================================" >> ${logfile}
+			${ScriptDir}/ccs_01_anatpreproc.sh ${subj} ${ADir} ${AnatName}\
+                ${AnatDir} ${DoDenoise} ${ScansNum} ${DoGCut} ${ScriptDir} >> ${logfile}
+			mv ${ADir}/${subj}/mri/brainmask.mgz ${ADir}/${subj}/mri/brainmask.fsinit.mgz
+       		if [[ -f ${ADir}/${subj}/mri/brainmask.fsinit.mgz ]]
+			then
+				echo CCS Skull stripping anatomical images for ${subj} has been done! >> ${logfile}
+               	echo ${subj} >> ${SkullList}
+				rm -f ${errfile}
+			else
+				mv -f ${logfile} ${errfile} 2>/dev/null
+				echo ERROR: skull stripping stopped with errors! Please check the logfile ccs_01_anatpreproc.error for ${subj} >&2
+                exit 1
+			fi
+        else
+            echo "-->Finished: Skull strip for ${subj}"
+			echo ${subj} >> ${SkullList}
+		fi
+	fi
+	}&
+}
+done
+wait
+
+exit 0

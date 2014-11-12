@@ -1,0 +1,44 @@
+# David F. Gleich
+# 2008-12-18
+
+# Build for SISC revision
+
+export EXPERIMENT_DIR=/home/dgleich/research/publications/2008/innout/experiments/lcsh2wiki/strmatching
+export WIKI_CAT_PAGES=$EXPERIMENT_DIR/../wiki2.names
+export LCSH_PAGES=$EXPERIMENT_DIR/../lcsh2.names
+
+export OUTPUT_BASE=lcsh2wiki
+
+# setup JAVA_JARS
+export JAVA_JARS=jars/lucene-core-2.2.0.jar:jars/lucene-spellchecker-2.2.0.jar:jars/edu.mit.jwi_1.1.3.jar:jars/secondstring-20060615.jar
+
+# compile
+javac -sourcepath $EXPERIMENT_DIR/src \
+     -d $EXPERIMENT_DIR/bin \
+    -classpath $JAVA_JARS\
+    $EXPERIMENT_DIR/src/edu/stanford/cads/oneoffs/*.java
+    
+# run wikipedia2lcsh (this indexes LCSH and searches with Wikipedia)
+
+java -Xmx1G -Dstopword="small.txt" \
+    -cp bin:$JAVA_JARS \
+    edu.stanford.cads.oneoffs/LuceneWikipedia2LCSH \
+      $WIKI_CAT_PAGES $LCSH_PAGES \
+      > $OUTPUT_BASE-wiki2lcsh.txt
+
+java -Xmx1G -Dstopword="small.txt" \
+    -cp bin:$JAVA_JARS \
+    edu.stanford.cads.oneoffs/LuceneWikipedia2LCSH \
+      $LCSH_PAGES $WIKI_CAT_PAGES \
+      > $OUTPUT_BASE-lcsh2wiki.txt 
+
+# convert to smat
+
+python ./stringmatch2graph.py $OUTPUT_BASE-lcsh2wiki.txt  1 > $OUTPUT_BASE-lcsh2wiki.smat
+python ./stringmatch2graph.py $OUTPUT_BASE-wiki2lcsh.txt 1 > $OUTPUT_BASE-wiki2lcsh.smat
+
+# sym-matching
+
+/opt/matlab/matlab-2007b/bin/matlab -nojvm -nodesktop -nodisplay \
+    -r "make_sym_matching('$OUTPUT_BASE-lcsh2wiki.smat','$OUTPUT_BASE-wiki2lcsh.smat','$OUTPUT_BASE-matches-all.smat'); exit;"
+    

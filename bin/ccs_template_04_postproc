@@ -1,0 +1,282 @@
+#!/usr/bin/env bash
+#################################################################################
+## SCRIPT TO RUN GENERAL RESTING-STATE PREPROCESSING
+##
+## Written by Xindi Wang.
+## Email: sandywang.rest@gmail.com
+## 
+#################################################################################
+
+
+#################################################################################
+## PARAMETERS
+#################################################################################
+
+## directory where scripts are located
+ScriptDir=$CCSDIR/bin
+
+#Execute volume-based metrics
+DoVolume=false
+#Execute surface-based metrics
+DoSurface=false
+
+#Execute ReHo
+ExecuteReHo=false
+
+#Execute ALFF
+ExecuteALFF=false
+
+#Execute fALFF
+ExecutefALFF=false
+
+#Execute Degree Centrality
+ExecuteDC=false
+
+#Execute Eigenvalue Centrality
+ExecuteEC=false
+
+#Execute Betweenness Centrality
+ExecuteBC=false
+
+#Execute Page-rank Centrality
+ExecutePC=false
+
+#Execute seed-based functional connectivity
+ExecuteFC=false
+
+#Execute 
+ExecuteVMHC=false
+
+while (( $# > 0 )) ; 
+do
+    case "$1" in
+        "-config")
+            Config=$1
+            break
+            ;;
+        "-adir")
+            shift
+            ADir=$1
+            shift
+            ;;
+        "-sublist")
+            shift
+            SubList=$1
+            shift
+            ;;
+        "-volume")
+            DoVolume=true
+            shift
+            ;;
+        "-surface")
+            DoSurface=true
+            shift
+            ;;
+        "-reho")
+            ExecuteReHo=true
+            shift
+            ;;
+        "-alff")
+            ExecuteALFF=true
+            shift
+            ALFF_Low="$1"
+            shift
+            ALFF_High="$1"
+            shift
+            ;;
+        "-falff")
+            ExecutefALFF=true
+            shift
+            fALFF_Low="$1"
+            shift
+            fALFF_High="$1"
+            shift
+            ;;
+        "-dc")
+            ExecuteDC=true
+            shift
+            DC_P="$1"
+            shift
+            ;;
+        "-ec")
+            ExecuteEC=true
+            shift
+            EC_P="$1"
+            shift
+            ;;
+        "-bc")
+            ExecuteBC=true
+            shift
+            BC_P="$1"
+            shift
+            ;;
+        "-pc")
+            ExecutePC=true
+            shift
+            PC_P="$1"
+            shift
+            ;;
+        "-fc")
+            ExecuteFC=true
+            shift
+            FC_File="$1"
+            shift
+            ;;
+        "-vmhc")
+            ExecuteVMHC=true
+            shift
+            VMHC_File="$1"
+            shift
+            ;;
+        *)
+            break
+            ;;
+        -*)
+            echo "ERROR: Unknown option '$1'"
+            exit 1
+            break
+            ;;
+    esac
+done
+
+#Full path to the list of subjects
+SubList=${ADir}/scripts/${SubList}
+echo $ADir
+echo $SubList
+
+#Run volume-based metrics
+if $DoVolume
+then
+    echo $DoVolume
+    #ReHo
+    if $ExecuteReHo
+    then
+        echo $ExecuteReHo
+    fi
+
+    #ALFF
+    if $ExecuteALFF
+    then
+        echo $ExecuteALFF
+        echo $ALFF_Low
+        echo $ALFF_High
+    fi
+
+    #fALFF
+    if $ExecutefALFF
+    then
+        echo $ExecutefALFF
+        echo $fALFF_Low
+        echo $fALFF_High
+    fi
+
+    #DC
+    if $ExecuteDC
+    then
+        echo $ExecuteDC
+        echo $DC_P
+    fi
+
+    #EC
+    if $ExecuteEC
+    then
+        echo $ExecuteEC
+        echo $EC_P
+    fi
+
+    #BC
+    if $ExecuteBC
+    then
+        echo $ExecuteBC
+        echo $BC_P
+    fi
+
+    #PC
+    if $ExecutePC
+    then
+        echo $ExecutePC
+        echo $PC_P
+    fi
+
+    #FC
+    if $ExecuteFC
+    then
+        echo $ExecuteFC
+        echo $FC_File
+    fi
+
+    #VMHC
+    if $ExecuteVMHC
+    then
+        echo $ExecuteVMHC
+        echo $VMHC_File
+    fi
+fi
+
+if $DoSurface
+then
+    echo $DoSurface
+    #ReHo
+    if $ExecuteReHo
+    then
+        echo $ExecuteReHo
+    fi
+
+    #ALFF
+    if $ExecuteALFF
+    then
+        echo $ExecuteALFF
+        echo $ALFF_Low
+        echo $ALFF_High
+    fi
+
+    #fALFF
+    if $ExecutefALFF
+    then
+        echo $ExecutefALFF
+        echo $fALFF_Low
+        echo $fALFF_High
+    fi
+
+    #DC
+    if $ExecuteDC
+    then
+        echo $ExecuteDC
+        echo $DC_P
+    fi
+
+    #EC
+    if $ExecuteEC
+    then
+        echo $ExecuteEC
+        echo $EC_P
+    fi
+
+    #BC
+    if $ExecuteBC
+    then
+        echo $ExecuteBC
+        echo $BC_P
+    fi
+
+    #PC
+    if $ExecutePC
+    then
+        echo $ExecutePC
+        echo $PC_P
+    fi
+
+    #FC
+    if $ExecuteFC
+    then
+        echo $ExecuteFC
+        echo $FC_File
+    fi
+
+    #VMHC
+    if $ExecuteVMHC
+    then
+        echo $ExecuteVMHC
+        echo $VMHC_File
+    fi
+fi

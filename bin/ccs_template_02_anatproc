@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+#################################################################################
+## SCRIPT TO RUN GENERAL RESTING-STATE PREPROCESSING
+##
+## Written by Xindi Wang.
+## Email: sandywang.rest@gmail.com
+## 
+#################################################################################
+#################################################################################
+## PARAMETERS
+#################################################################################
+ADir=$( pwd )
+SubjListName=subject.list
+
+AnatDir=anat
+AnatName=mprage
+
+DoGPU=false
+
+StandardHead=${FSLDIR}/data/standard/MNI152_T1_2mm.nii.gz
+StandardBrain=${FSLDIR}/data/standard/MNI152_T1_2mm_brain.nii.gz
+
+DoRefine=false
+StandardRefine=
+
+#Directory where scripts are located
+ScriptDir=$CCSDIR/bin
+
+#Full path to the list of subjs
+SubjList=${ADir}/scripts/${SubjListName}
+
+#################################################################################
+##---START OF SCRIPT-----------------------------------------------------------##
+#################################################################################
+#set -e
+echo "====================$( date )===================="
+echo "CCS anatomical images processing ..." 
+
+## Get subjs to run
+subjs=$( cat ${SubjList} )
+
+## SUBJECT LOOP
+
+## Segmenting and reconstructing surfaces: anatomical images
+echo "====================$( date )===================="
+echo "Surface reconstraction processing ... (May take more than 24 hours for one subject)"
+
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {};killall -s SIGTERM -u $USER recon-all;exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+    set -e
+	if [ ! -f ${ADir}/${subj}/mri/brainmask.mgz ]
+	then
+		echo "WARNNING: ${subj} may not be checked the skull stripping for quality control!!" >&2
+        exit 1
+	fi
+	logfile=${ADir}/${subj}/scripts/ccs_01_anatsurfrecon.log
+	errfile=${ADir}/${subj}/scripts/ccs_01_anatsurfrecon.error
+    trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+	if [ ! -f ${logfile} ]
+	then
+		echo "-->RUNNING: surface reconstruction for ${subj}"
+   		echo "=================================================" >> ${logfile}
+		echo "CCS $( date ) " >> ${logfile}
+		echo "Segmenting and reconstructing cortical surfaces for ${subj} ..." >> ${logfile}
+		echo "=================================================" >> ${logfile}
+		${ScriptDir}/ccs_01_anatsurfrecon.sh ${subj} ${ADir} ${AnatName} ${AnatDir} ${DoGPU} >> ${logfile}
+		if [ -f ${ADir}/${subj}/scripts/recon-all.done ]
+		then
+			echo CCS reconstruction for ${subj} has been done! >> ${logfile}
+			rm -f ${errfile}
+		else
+			echo "ERROR: reconstruction stopped with errors! Please check the ccs_01_anatsurfrecon.error and recon-all.error for ${subj}" >&2
+			mv ${logfile} ${errfile} 2>/dev/null
+            exit 1
+		fi
+	else
+		echo "-->Finished: Segmentation and surface reconstruction for ${subj}"
+	fi
+	}&
+}
+done
+wait
+
+## Registering anatomical images
+echo "====================$( date )===================="
+echo "Registering anatomical images to MNI152 template"
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {} && exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+	if [ ! -f ${ADir}/${subj}/scripts/ccs_01_anatsurfrecon.log ]
+	then
+		echo "ERROR: Please check and run the surface reconstraction step for ${subj} first..." >&2
+        exit 1
+	else
+	    logfile=${ADir}/${subj}/scripts/ccs_02_anatregister.log
+	    errfile=${ADir}/${subj}/scripts/ccs_02_anatregister.error
+        trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+       	if [ ! -f ${logfile} ]
+       	then
+        	echo "-->RUNNING: subj ${subj} registrating anatomical images to MNI152 template"
+    		echo "=================================================" >> ${logfile}
+	        echo "CCS $( date ) " >> ${logfile}
+			echo "Registering anatomical images to MNI152 template for ${subj} ..." >> ${logfile}
+	        echo "=================================================" >> ${logfile}
+			${ScriptDir}/ccs_02_anatregister.sh ${subj} ${ADir} ${AnatDir} ${StandardHead} ${StandardBrain} >> ${logfile}
+			if [ -f ${ADir}/${subj}/${AnatDir}/reg/highres2standard_warp.nii.gz ] 
+			then
+				echo "CCS registration of anatomical images for ${subj} has been done!" >> ${logfile}
+				rm -f ${errfile}
+			else
+				mv ${logfile} ${errfile}
+				echo "ERROR: registeratin stopped with errors! Please check the logfile ccs_02_anatregister.error for ${subj}" >&2
+                exit 1
+			fi
+		else
+			echo "-->Finished: Registration for ${subj}"
+		fi	
+	fi
+	}&
+}
+done
+wait
+
+exit 0

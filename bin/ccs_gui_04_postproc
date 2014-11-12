@@ -1,0 +1,629 @@
+#!/usr/bin/env bash
+#################################################################################
+## SCRIPT TO RUN GENERAL RESTING-STATE PREPROCESSING
+##
+## Written by Xindi Wang.
+## Email: sandywang.rest@gmail.com
+## 
+#################################################################################
+# ini parser function
+function GetPara()
+{
+    if [[ ! -f $1 || $# -ne 3 ]];
+    then
+        return 1
+    fi
+
+    INIFile=$1
+
+    BlockName=$2
+    FieldName=$3
+    
+    CatchFlag=0
+
+    cat $INIFile | while read line
+    do
+        if [[ "$line" = "[$BlockName]" ]]
+        then
+            CatchFlag=1
+            continue
+        fi
+
+        if [[ $CatchFlag -eq 1 ]]
+        then
+            OverFlag=$( echo $line \
+                | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}' )
+            if [[ $OverFlag -eq 1 ]]
+            then
+                break
+            fi
+            
+            IgnoreFlag=$( echo $line \
+                | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}' )
+
+            if [[ $IgnoreFlag -eq 1 ]]
+            then
+                continue
+            fi
+
+            field=$( echo $line  | awk -F= '{gsub(" |\t", "", $1); print $1}' )
+            value=$( echo $line  | awk -F= '{gsub(" |\t", "", $2); print $2}' )
+            if [[ "$FieldName" = "$field" ]]
+            then
+                echo $value
+                break
+            fi
+        fi
+    done
+    return $value
+}
+#################################################################################
+## PARAMETERS
+#################################################################################
+
+ADir=$( pwd )
+SubjListName=subject.list
+
+AnatDir=anat
+
+FuncDir=func
+FuncName=rest
+
+#Surface Template
+StandardSurface=fsaverage5
+#EPI Template
+StandardEPI=$CCSDIR/bin/templates/MNI152_T1_3mm_brain.nii.gz
+
+## if use anatomical refine registration
+DoRefine=false
+StandardRefine=
+
+#TR
+TR=3
+
+#Execute volume-based metrics
+DoVolume=false
+
+#Execute VMHC
+ExecuteVolVMHC=false
+
+#Execute ReHo
+ExecuteVolReHo=false
+
+#Execute ALFF fALFF Slow4
+ExecuteVolALFF=false
+
+#Execute VNCM 
+ExecuteVolVNCM=false
+VolVNCM_State="0 0 0 0"
+VolVNCM_P=
+
+#Execute seed-based functional connectivity
+ExecuteVolFC=false
+VolFC_ListFile=
+
+#Execute surface-based metrics
+DoSurface=false
+
+#Execute VMHC
+ExecuteSurVMHC=false
+
+#Execute ReHo
+ExecuteSurReHo=false
+
+#Execute ALFF fALFF Slow4
+ExecuteSurALFF=false
+
+#Execute VNCM 
+ExecuteSurVNCM=false
+SurVNCM_State="0 0 0 0"
+SurVNCM_P=
+
+#Execute seed-based functional connectivity
+ExecuteSurFC=false
+SurFC_ListFile=
+
+while (( $# > 0 )) ; 
+do
+    case "$1" in
+        "-pre_config")
+            shift
+            PreConfig=$1
+            shift
+            ;;
+        "-post_config")
+            shift
+            PostConfig=$1
+            shift
+            ;;
+        "-analysis_dir")
+            shift
+            ADir=$1
+            shift
+            ;;
+        "-subj_list")
+            shift
+            SubjListName=$1
+            shift
+            ;;
+        "-anat_dir")
+            shift
+            AnatDir=$1
+            shift
+            ;;
+        "-func_dir")
+            shift
+            FuncDir=$1
+            shift
+            ;;
+        "-func_name")
+            shift
+            FuncName=$1
+            shift
+            ;;
+        "-surface")
+            shift
+            StandardSurface=$1
+            shift
+            ;;
+        "-epi")
+            shift
+            StandardEPI=$1
+            shift
+            ;;
+        "-refine")
+            DoRefine=true
+            shift
+            StandardRefine=$1
+            shift
+            ;;
+        "-tr")
+            shift
+            TR=$1
+            shift
+            ;;
+        "-do_volume")
+            DoVolume=true
+            shift
+            ;;
+        "-vol_reho")
+            ExecuteVolReHo=true
+            shift
+            ;;
+        "-vol_alff")
+            ExecuteVolALFF=true
+            shift
+            ;;
+        "-vol_vmhc")
+            ExecuteVolVMHC=true
+            shift
+            ;;
+        "-vol_vncm")
+            ExecuteVolVNCM=true
+            shift
+            VolVNCM_State="$1"
+            shift
+            VolVNCM_P="$1"
+            shift
+            ;;
+        "-vol_fc")
+            ExecuteVolFC=true
+            shift
+            VolFC_ListFile="$1"
+            shift
+            ;;
+        "-do_surface")
+            DoSurface=true
+            shift
+            ;;
+        "-sur_reho")
+            ExecuteSurReHo=true
+            shift
+            ;;
+        "-sur_alff")
+            ExecuteSurALFF=true
+            shift
+            ;;
+        "-sur_vmhc")
+            ExecuteSurVMHC=true
+            shift
+            ;;
+        "-sur_vncm")
+            ExecuteSurVNCM=true
+            shift
+            SurVNCM_State="$1"
+            shift
+            SurVNCM_P="$1"
+            shift
+            ;;
+        "-sur_fc")
+            ExecuteSurFC=true
+            shift
+            SurFC_ListFile="$1"
+            shift
+            ;;
+        *)
+            break
+            ;;
+        -*)
+            echo "ERROR: Unknown option '$1'"
+            exit 1
+            break
+            ;;
+    esac
+done
+
+if [[ -n $PreConfig ]]
+then
+    AnatDir=$( GetPara $PreConfig "Anatomical Directory" name )
+    FuncDir=$( GetPara $PreConfig "Functional Directory" name )
+    FuncName=$( GetPara $PreConfig "Functional Filename" name )
+    StandardSurface=$( GetPara $PreConfig "Anatomical Template" surface )
+    StandardEPI=$( GetPara $PreConfig "Functional Template" template )
+    DoRefine=$( GetPara $Config "Refine Template" execute | tr [:upper:] [:lower:] )
+    StandardRefine=$( GetPara $Config "Refine Template" template )
+    TR=$( GetPara $Config "TR" value )
+fi
+
+if [[ -n $PostConfig ]]
+then
+    DoVolume=$( GetPara $PostConfig Volume execute | tr [:upper:] [:lower:])
+    ExecuteVolReHo=$( GetPara $PostConfig Volume reho | tr [:upper:] [:lower:])
+    ExecuteVolALFF=$( GetPara $PostConfig Volume alff | tr [:upper:] [:lower:])
+    ExecuteVolVMHC=$( GetPara $PostConfig Volume vmhc | tr [:upper:] [:lower:])
+    ExecuteVolDC=$( GetPara $PostConfig Volume vncm_dc | tr [:upper:] [:lower:])
+    VolDC=0
+    if ExecuteVolDC
+    then
+        VolDC=1
+    fi
+    ExecuteVolEC=$( GetPara $PostConfig Volume vncm_ec | tr [:upper:] [:lower:])
+    VolEC=0
+    if ExecuteVolEC
+    then
+        VolEC=1
+    fi
+    ExecuteVolBC=$( GetPara $PostConfig Volume vncm_bc | tr [:upper:] [:lower:])
+    VolBC=0
+    if ExecuteVolBC
+    then
+        VolBC=1
+    fi
+    ExecuteVolPC=$( GetPara $PostConfig Volume vncm_pc | tr [:upper:] [:lower:])
+    VolPC=0
+    if ExecuteVolPC
+    then
+        VolPC=1
+    fi
+    ExecuteVolVNCM=false
+    if [[ $VolDC || $VolEC || $VolBC || $VolPC ]]
+    then
+        ExecuteVolVNCM=true
+    fi
+    VolVNCM_State="$VolDC $VolEC $VolBC $VolPC"
+    VolVNCM_P=$( GetPara $PostConfig Volume vncm_pvalue )
+    ExecuteVolFC=$( GetPara $PostConfig Volume "fc" | tr [:upper:] [:lower:])
+    VolFC_ListFile=$( GetPara $PostConfig Volume fc_listfile )
+
+    DoSurface=$( GetPara $PostConfig Surface execute | tr [:upper:] [:lower:])
+    ExecuteSurReHo=$( GetPara $PostConfig Surface reho | tr [:upper:] [:lower:])
+    ExecuteSurALFF=$( GetPara $PostConfig Surface alff | tr [:upper:] [:lower:])
+    ExecuteSurVMHC=$( GetPara $PostConfig Surface vmhc | tr [:upper:] [:lower:])
+    ExecuteSurDC=$( GetPara $PostConfig Surface vncm_dc | tr [:upper:] [:lower:])
+    SurDC=0
+    if ExecuteSurDC
+    then
+        SurDC=1
+    fi
+    ExecuteSurEC=$( GetPara $PostConfig Surface vncm_ec | tr [:upper:] [:lower:])
+    SurEC=0
+    if ExecuteSurEC
+    then
+        SurEC=1
+    fi
+    ExecuteSurBC=$( GetPara $PostConfig Surface vncm_bc | tr [:upper:] [:lower:])
+    SurBC=0
+    if ExecuteSurBC
+    then
+        SurBC=1
+    fi
+    ExecuteSurPC=$( GetPara $PostConfig Surface vncm_pc | tr [:upper:] [:lower:])
+    SurPC=0
+    if ExecuteSurPC
+    then
+        SurPC=1
+    fi
+    ExecuteSurVNCM=false
+    if [[ $SurDC || $SurEC || $SurBC || $SurPC ]]
+    then
+        ExecuteSurVNCM=true
+    fi
+    ExecuteSurVNCM="$SurDC $SurEC $SurBC $SurPC"
+    SurVNCM_P=$( GetPara $PostConfig Surface vncm_pvalue )
+    ExecuteSurFC=$( GetPara $PostConfig Surface "fc" | tr [:upper:] [:lower:])
+    SurFC_ListFile=$( GetPara $PostConfig Surface fc_listfile )
+fi
+
+## directory where scripts are located
+ScriptDir=$CCSDIR/bin
+MatlabScript=$ScriptDir/matlab
+Matlab=$MATLAB_HOME/bin/matlab
+
+#Full path to the list of subjects
+SubjList=${ADir}/scripts/${SubjListName}
+
+export ADir
+export SubjList
+export ScriptDir
+export AnatDir
+export FuncDir
+export FuncName
+export StandardSurface
+export StandardEPI
+export DoRefine
+export StandardRefine
+export TR
+export VolVNCM_State
+export VolVNCM_P
+export SurVNCM_State
+export SurVNCM_P
+export SurFC_ListFile
+
+set -e
+
+## Generating group anatomical templates of this set of subjs
+template_dir=${ADir}/group/templates
+template_name=group_anat
+spr=2mm
+${ScriptDir}/ccs_07_grp_meanstruc.sh ${ADir} ${SubjList}\
+    ${AnatDir} ${template_dir} ${template_name} ${spr}
+
+## Generate group templates and masks for functional
+## analyses at group level: please run this after the
+## quality control procedure (QCP) done
+group_dir=${ADir}/group/
+mask_prefix=group_bold
+${ScriptDir}/ccs_07_grp_boldmask.sh ${ADir} ${SubjList}\
+    ${group_dir} ${AnatDir} ${FuncDir} ${StandardEPI}\
+    ${DoRefine} ${mask_prefix}
+${ScriptDir}/ccs_07_grp_meanbold.sh ${ADir} ${SubjList}\
+    ${group_dir} ${AnatDir} ${FuncDir} ${StandardEPI}\
+    ${DoRefine} ${mask_prefix}
+$Matlab -nodesktop -nosplash -r\
+    "addpath('$MatlabScript');ccs_gui_grp_SurfMask;quit;"
+
+subjs=$( cat ${SubjList} )
+#Run volume-based metrics
+if $DoVolume
+then
+    #ALFF
+    if $ExecuteVolALFF
+    then
+        echo "ExecuteVolALFF: $ExecuteVolALFF"
+        num_of_queue=0
+        for subj in ${subjs}
+        do
+	        while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	        do
+		        wait
+		        num_of_queue=0
+	        done
+	        let num_of_queue=num_of_queue+1
+
+	        {
+	        mkdir -p ${ADir}/${subj}/scripts
+            logfile=${ADir}/${subj}/scripts/ccs_06_singlesubjectALFF.log
+            if [[ ! -f ${logfile} ]]
+            then
+			    echo "-->RUNNING: ALFF for ${subj}..."
+			    echo "=================================================" >> ${logfile}
+			    echo "CCS $( date ) " >> ${logfile}
+			    echo "Postprocessing of functional images for ${subj} ..." >> ${logfile}
+			    echo "=================================================" >> ${logfile}
+                ${ScriptDir}/ccs_06_singlesubjectALFF.sh\
+                    ${ADir} ${subj} ${FuncName} ${TR}\
+                    ${AnatDir} ${FuncDir} ${DoRefine}\
+                    ${StandardEPI} reg >> ${logfile}
+                if [[ ! $? -eq 0 ]]
+                then
+				    mv ${logfile} ${ADir}/${subj}/scripts/ccs_06_singlesubjectALFF.error
+				    echo ERROR: ALFF stopped with errors! Please check the logfile ccs_06_singlesubjectALFF.error for ${subj} >&2
+                    exit 1
+                #else
+				#    rm -f ${ADir}/${subj}/scripts/ccs_06_singlesubjectALFF.error
+                fi
+            else
+                echo "-->Finished: ALFF for ${subj}"
+            fi
+            }&
+        done
+        wait
+    fi
+
+    #ReHo
+    if $ExecuteVolReHo
+    then
+        echo "ExecuteVolReHo: $ExecuteVolReHo"
+        num_of_queue=0
+        for subj in ${subjs}
+        do
+	        while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	        do
+		        wait
+		        num_of_queue=0
+	        done
+	        let num_of_queue=num_of_queue+1
+
+	        {
+	        mkdir -p ${ADir}/${subj}/scripts
+            logfile=${ADir}/${subj}/scripts/ccs_06_singlesubjectReHo.log
+            if [[ ! -f ${logfile} ]]
+            then
+			    echo "-->RUNNING: ReHo for ${subj}..."
+			    echo "=================================================" >> ${logfile}
+			    echo "CCS $( date ) " >> ${logfile}
+			    echo "Postprocessing of functional images for ${subj} ..." >> ${logfile}
+			    echo "=================================================" >> ${logfile}
+                ${ScriptDir}/ccs_06_singlesubjectReHo.sh\
+                    ${ADir} ${subj} ${FuncName} ${AnatDir}\
+                    ${FuncDir} ${DoRefine} ${StandardEPI} reg >> ${logfile}
+                if [[ ! $? -eq 0 ]]
+                then
+				    mv ${logfile} ${ADir}/${subj}/scripts/ccs_06_singlesubjectReHo.error
+				    echo ERROR: ReHo stopped with errors! Please check the logfile ccs_06_singlesubjectReHo.error for ${subj} >&2
+                    exit 1
+                #else
+				#    rm -f ${ADir}/${subj}/scripts/ccs_06_singlesubjectReHo.error
+                fi
+            else
+                echo "-->Finished: ReHo for ${subj}"
+            fi
+            }&
+        done
+        wait
+    fi
+
+    #VMHC
+    if $ExecuteVolVMHC
+    then
+        echo "ExecuteVolVMHC: $ExecuteVolVMHC"
+        num_of_queue=0
+        for subj in ${subjs}
+        do
+	        while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	        do
+		        wait
+		        num_of_queue=0
+	        done
+	        let num_of_queue=num_of_queue+1
+
+	        {
+	        mkdir -p ${ADir}/${subj}/scripts
+            logfile=${ADir}/${subj}/scripts/ccs_06_singlesubjectVMHC.log
+            if [[ ! -f ${logfile} ]]
+            then
+			    echo "-->RUNNING: VMHC for ${subj}..."
+			    echo "=================================================" >> ${logfile}
+			    echo "CCS $( date ) " >> ${logfile}
+			    echo "Postprocessing of functional images for ${subj} ..." >> ${logfile}
+			    echo "=================================================" >> ${logfile}
+                ${ScriptDir}/ccs_06_singlesubjectVMHC.sh\
+                    ${ADir} ${subj} ${FuncName} ${AnatDir}\
+                    ${FuncDir} ${DoRefine} ${StandardEPI} false\
+                    ${ScriptDir} reg >> ${logfile}
+                if [[ ! $? -eq 0 ]]
+                then
+				    mv ${logfile} ${ADir}/${subj}/scripts/ccs_06_singlesubjectVMHC.error
+				    echo ERROR: VMHC stopped with errors! Please check the logfile ccs_06_singlesubjectVMHC.error for ${subj} >&2
+                    exit 1
+                #else
+				#    rm -f ${ADir}/${subj}/scripts/ccs_06_singlesubjectVMHC.error
+                fi
+            else
+                echo "-->Finished: VMHC for ${subj}"
+            fi
+            }&
+        done
+        wait
+    fi
+
+    #VNCM
+    if $ExecuteVolVNCM
+    then
+        echo "VolVNCM_State: $VolVNCM_State"
+        echo "VolVNCM_P: $VolVNCM_P"
+        $Matlab -nodesktop -nosplash -r\
+            "addpath('$MatlabScript');ccs_gui_singlesubjectVNCM;quit;"
+    fi
+
+    #FC
+    if $ExecuteVolFC
+    then
+        echo "ExecuteVolFC: $ExecuteVolFC"
+        echo "VolFC_ListFile: $VolFC_ListFile"
+        num_of_queue=0
+        for subj in ${subjs}
+        do
+	        while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	        do
+		        wait
+		        num_of_queue=0
+	        done
+	        let num_of_queue=num_of_queue+1
+
+	        {
+	        mkdir -p ${ADir}/${subj}/scripts
+            logfile=${ADir}/${subj}/scripts/ccs_06_singlesubjectSFC.log
+            if [[ ! -f ${logfile} ]]
+            then
+			    echo "-->RUNNING: SFC for ${subj}..."
+			    echo "=================================================" >> ${logfile}
+			    echo "CCS $( date ) " >> ${logfile}
+			    echo "Postprocessing of functional images for ${subj} ..." >> ${logfile}
+			    echo "=================================================" >> ${logfile}
+                ${ScriptDir}/ccs_06_singlesubjectSFC.sh\
+                    ${ADir} ${subj} ${FuncName} ${AnatDir}\
+                    ${FuncDir} ${DoRefine} ${VolFC_ListFile}\
+                    false ${StandardEPI} reg >> ${logfile}
+                if [[ ! $? -eq 0 ]]
+                then
+				    mv ${logfile} ${ADir}/${subj}/scripts/ccs_06_singlesubjectSFC.error
+				    echo ERROR: SFC stopped with errors! Please check the logfile ccs_06_singlesubjectSFC.error for ${subj} >&2
+                    exit 1
+                #else
+				#    rm -f ${ADir}/${subj}/scripts/ccs_06_singlesubjectSFC.error
+                fi
+            else
+                echo "-->Finished: SFC for ${subj}"
+            fi
+            }&
+        done
+        wait
+    fi
+fi
+
+if $DoSurface
+then
+    #ALFF
+    if $ExecuteSurALFF
+    then
+        echo "ExecuteALFF: $ExecuteSurALFF"
+        $Matlab -nodesktop -nosplash -r\
+            "addpath('$MatlabScript');ccs_gui_singlesubject2dALFF;quit;"
+    fi
+
+    #ReHo
+    if $ExecuteSurReHo
+    then
+        echo "ExecuteReHo: $ExecuteSurReHo"
+        $Matlab -nodesktop -nosplash -r\
+            "addpath('$MatlabScript');ccs_gui_singlesubject2dReHo;quit;"
+    fi
+
+    #DC
+    if $ExecuteSurVNCM
+    then
+        echo "SurVNCM_State: $SurVNCM_State"
+        echo "SurVNCM_P: $SurVNCM_P"
+        $Matlab -nodesktop -nosplash -r\
+            "addpath('$MatlabScript');ccs_gui_singlesubject2dVNCM;quit;"
+    fi
+
+    #FC
+    if $ExecuteSurFC
+    then
+        echo "ExecuteSurFC: $ExecuteSurFC"
+        echo "SurFC_ListFile: $SurFC_ListFile"
+        $Matlab -nodesktop -nosplash -r\
+            "addpath('$MatlabScript');ccs_gui_singlesubject2dSFC;quit;"
+    fi
+
+    #VMHC
+    if $ExecuteSurVMHC
+    then
+        echo "ExecuteSurVMHC: $ExecuteSurVMHC"
+    fi
+fi
+
+wait 
+exit 0

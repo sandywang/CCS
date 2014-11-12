@@ -1,0 +1,31 @@
+8
+
+dir
+8
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java/trunk/src/org/apache/lucene/analysis
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java
+
+
+
+2007-09-25T19:44:53.360021Z
+4
+David Gleich
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bf858b66-2738-0410-8cd7-81738de7703c
+
+ngram
+dir
+

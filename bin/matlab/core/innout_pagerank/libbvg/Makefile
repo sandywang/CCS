@@ -1,0 +1,68 @@
+#
+# Makefile for random alpha PageRank experiments with libbvg
+#
+# David Gleich
+# Copyright, Stanford University, 2008
+# 4 February 2008
+#
+
+# setup paths and sources
+LIBBVG_SRC_DIR := src
+LIBBVG_INCLUDE := -Iinclude -Isrc
+LIBBVG_SRC := bitfile.c bvgraph.c bvgraph_iterator.c properties.c util.c
+LIBBVG_FULL_SRC := $(addprefix $(LIBBVG_SRC_DIR)/,$(LIBBVG_SRC))
+LIBBVG_FULL_OBJ := $(LIBBVG_FULL_SRC:.c=.o)
+
+
+BVPRDEPS := pagerank_power.hpp pagerank_inout.hpp bvgraph_pagerank_mult.hpp vecfun.hpp
+BVPR := bvpr
+BVPROBJS := bvpagerank.o 
+
+BVMCPRDEPS := pagerank_power.hpp pagerank_inout.hpp bvgraph_pagerank_mult_omp.hpp vecfunomp.hpp
+BVMCPR := bvmcpr
+BVMCPROBJS := bvmcpr.o
+
+INCLUDE := $(INCLUDE) $(LIBBVG_INCLUDE) 
+
+# setup flags
+CFLAGS := $(CFLAGS) -Wall -fopenmp -O3 $(INCLUDE)
+CXXFLAGS := $(CXXFLAGS) -Wall -fopenmp -O3 $(INCLUDE)
+
+# declare phony targets
+.PHONY: all clean 
+
+all:  $(BVPR) $(BVMCPR) bvtranspr bvmctranspr  
+
+$(BVPROBJS) : $(BVPRDEPS)
+
+$(BVPR): $(LIBBVG_FULL_SRC:.c=.o) $(BVPROBJS) 
+	$(CXX) $(CXXFLAGS) $(LIBBVG_FULL_SRC:.c=.o) $(BVPROBJS) -o $(BVPR)	    
+
+$(BVMCPROBJS) : $(BVMCPRDEPS)
+
+$(BVMCPR) : $(LIBBVG_FULL_SRC:.c=.o) $(BVMCPROBJS) 
+	$(CXX) $(CXXFLAGS) $(LIBBVG_FULL_SRC:.c=.o) $(BVMCPROBJS) -o $(BVMCPR)	    
+	
+bvtranspr.o : pagerank_power.hpp pagerank_inout.hpp pagerank_gauss_seidel.hpp pagerank_inoutgs.hpp\
+			  bvgraph_pagerank_trans_mult.hpp vecfun.hpp	
+
+bvtranspr : $(LIBBVG_FULL_SRC:.c=.o) bvtranspr.o 
+	$(CXX) $(CXXFLAGS) $(LIBBVG_FULL_SRC:.c=.o) bvtranspr.o -o bvtranspr
+	
+bvmctranspr.o : pagerank_power.hpp pagerank_inout.hpp bvgraph_pagerank_trans_mult_omp.hpp vecfunomp.hpp	
+
+bvmctranspr : $(LIBBVG_FULL_SRC:.c=.o) bvmctranspr.o 
+	$(CXX) $(CXXFLAGS) $(LIBBVG_FULL_SRC:.c=.o) bvmctranspr.o -o bvmctranspr
+	
+clean:
+	$(RM) $(BVPAGERANKOBJS) $(BVMCPROBJS) bvtranspr.o bvmctranspr.o
+		
+clean_all:
+	$(RM) $(LIBBVG_FULL_SRC:.c=.o) \
+	        $(BVPAGERANKNAME) $(BVPAGERANKOBJS) \
+            $(BVMCPR) $(BVMCPROBJS) \
+            bvmctranspr bvmctranspr.o \
+            bvtranspr bvtranspr.o
+            
+
+	

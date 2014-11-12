@@ -1,0 +1,312 @@
+#!/usr/bin/env bash
+#################################################################################
+## SCRIPT TO RUN GENERAL RESTING-STATE PREPROCESSING
+##
+## Written by Xindi Wang.
+## Email: sandywang.rest@gmail.com
+## 
+#################################################################################
+#################################################################################
+## PARAMETERS
+#################################################################################
+ADir=$( pwd )
+SubjListName=subject.list
+
+AnatDir=anat
+
+FuncDir=func
+FuncName=rest
+
+TR=3
+DropNum=5
+
+SliceOrder=alt+z
+
+#High pass Low cut-off
+BandLow=0.01
+#Low pass High cut-off
+BandHigh=0.08
+
+#Surface Template
+StandardSurface=fsaverage5
+#EPI Template
+StandardEPI=$CCSDIR/bin/templates/MNI152_T1_3mm_brain.nii.gz
+
+## if use anatomical refine registration
+DoRefine=false
+StandardRefine=
+
+## if use svd to extract the mean ts
+svd=false
+## use epi0 for functional example image
+use_epi0=false
+## clean the temporary figures
+clean_tmpfiles=true
+
+#Directory where scripts are located
+ScriptDir=$CCSDIR/bin
+
+#Full path to the list of subjs
+SubjList=${ADir}/scripts/${SubjListName}
+
+#################################################################################
+##---START OF SCRIPT-----------------------------------------------------------##
+#################################################################################
+#set -e
+## Get subjs to run
+subjs=$( cat ${SubjList} )
+
+## SUBJECT LOOP
+## Preprocessing functional images
+echo "====================$( date )===================="
+echo "PRE-PREPROCESSING FUNCTIONAL IMAGES..."
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {} && exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+	if [ ! -f ${ADir}/${subj}/${FuncDir}/${FuncName}.nii.gz ]
+	then
+		echo "ERROR: No functional images or directory for ${subj}" >&2
+        exit 1
+	else
+		mkdir -p ${ADir}/${subj}/scripts
+		logfile=${ADir}/${subj}/scripts/ccs_01_funcpreproc.log
+		errfile=${ADir}/${subj}/scripts/ccs_01_funcpreproc.error
+        trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+		if [ ! -f ${logfile} ]
+	    then
+			echo "-->RUNNING: ${subj} pre-preprocessing functional images ..."
+			echo "=================================================" >> ${logfile}
+			echo "CCS $( date ) " >> ${logfile}
+			echo "Running pre-preprocessing functional images for ${subj} ..." >> ${logfile}
+			echo "=================================================" >> ${logfile}
+     	    ${ScriptDir}/ccs_01_funcpreproc.sh ${subj} ${ADir} ${FuncName} ${DropNum} ${TR} ${AnatDir} ${FuncDir} ${SliceOrder} >> ${logfile}
+        	if [ -f ${ADir}/${subj}/${FuncDir}/${FuncName}_gms.nii.gz ]    
+        	then
+				echo "CCS pre-preprocessing functional images for ${subj} has been done!" >> ${logfile}
+				rm -f ${errfile}
+            else
+				mv ${logfile} ${errfile}
+				echo "ERROR: pre-preprocessing stopped with errors! Please check the logfile ccs_01_funcpreproc.error for ${subj}" >&2
+                exit 1
+			fi
+		else
+			echo "-->SKIPPING: Pre-preprocess has been done for ${subj} ..."
+		fi	
+	fi
+	}&
+}
+done
+wait
+        
+## Registering functional images
+echo "====================$( date )===================="
+echo "REGISTERING FUNCTINAL IMAGES..."
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {} && exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+	if [ ! -f ${ADir}/${subj}/scripts/ccs_01_funcpreproc.log ]
+	then
+		echo "ERROR: Please check and run the pre-preprocessing step for ${subj} first..." >&2
+        exit 1
+	else
+		logfile=${ADir}/${subj}/scripts/ccs_02_funcregister.log
+		errfile=${ADir}/${subj}/scripts/ccs_02_funcregister.error
+        trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+        if [ ! -f ${logfile} ]
+        then
+            echo "-->RUNNING: Registering functional images ${subj} ..."
+		    echo "=================================================" >> ${logfile}
+            echo "CCS $( date ) " >> ${logfile}
+            echo "Running pre-preprocessing functional images for ${subj} ..." >> ${logfile}
+		    echo "=================================================" >> ${logfile}
+    		${ScriptDir}/ccs_02_funcbbregister.sh ${subj} ${ADir} ${FuncDir} ${FuncName} ${use_epi0}\
+                ${StandardSurface} >> ${logfile}
+			${ScriptDir}/ccs_02_funcregister.sh ${subj} ${ADir} ${AnatDir} ${FuncDir} ${StandardEPI}\
+                ${DoRefine} >> ${logfile}
+    		if [ -f ${ADir}/${subj}/${FuncDir}/reg/fnirt_example_func2standard.nii.gz ]  
+            then
+                echo "CCS registration of functional images for ${subj} has been done!" >> ${logfile}
+                rm -f ${errfile}
+            else    
+                mv ${logfile} ${errfile}
+                echo "ERROR: registeratin stopped with errors! Please check the logfile ccs_02_funcregister.error for ${subj}" >&2
+                exit 1
+            fi
+	    else
+			echo "-->SKIPPING: Registration has been done for ${subj}"
+	    fi
+	fi
+	}&
+}
+done
+wait
+
+## Segmenting functional images
+echo "====================$( date )===================="
+echo "CCS SEGMENTATION OF FUNCTIONAL IMAGES ..."
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {} && exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+	if [ ! -f ${ADir}/${subj}/scripts/ccs_02_funcregister.log ]
+	then
+		echo "ERROR: Please check and run the registration step for subj ${subj} first ..." >&2
+        exit 1
+	else
+		logfile=${ADir}/${subj}/scripts/ccs_03_funcsegment.log
+		errfile=${ADir}/${subj}/scripts/ccs_03_funcsegment.error
+        trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+	    if [ ! -f ${logfile} ]
+	    then
+			echo "-->RUNNING: Segmentation of functional images for ${subj} ..."
+			echo "=================================================" >> ${logfile}
+	        echo "CCS $( date ) " >> ${logfile}
+	        echo "Running segmentation of functional images for ${subj} ..." >> ${logfile}
+			echo "=================================================" >> ${logfile}
+   			${ScriptDir}/ccs_03_funcsegment.sh ${subj} ${ADir} ${FuncName} ${AnatDir} ${FuncDir} >> ${logfile}
+    		if [ -f ${ADir}/${subj}/${FuncDir}/wm_mask_fs.nii.gz ]
+  	        then
+      	        echo "CCS segmentation of functional images for ${subj} has been done!" >> ${logfile}
+       	        rm -f ${errfile}
+          	else   
+      	        mv ${logfile} ${errfile}
+      	        echo "ERROR: segmentation stopped with errors. Please check the logfile ccs_03_funcsegment.error for ${subj}" >&2
+                exit 1
+          	fi	
+		else
+			echo "SKIPPING: Segmentation has been done for ${subj}"
+		fi
+	fi
+	}&
+}
+done
+wait
+
+## Nuisance Regression on functional images
+echo "====================$( date )===================="
+echo "CCS NUISANCE REGRESSION OF FUNCTIONAL IMAGES ..."
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {} && exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+        unset child_array
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+	if [ ! -f ${ADir}/${subj}/scripts/ccs_03_funcsegment.log ]
+	then
+		echo "ERROR: Please check and run segmentation step for ${subj} first ..." >&2
+	else
+        logfile=${ADir}/${subj}/scripts/ccs_04_funcnuisance.log
+        errfile=${ADir}/${subj}/scripts/ccs_04_funcnuisance.error
+        trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+        if [ ! -f ${logfile} ]
+        then
+			echo "-->RUNNING: Nuisance regression of function image for ${subj}"
+			echo "=================================================" >> ${logfile}
+			echo "CCS $( date ) " >> ${logfile}
+			echo "Running nuisance removal of functional images for ${subj} ..." >> ${logfile}
+			echo "=================================================" >> ${logfile}
+	       	${ScriptDir}/ccs_04_funcnuisance.sh ${subj} ${ADir} ${FuncName} ${FuncDir} ${svd} >> ${logfile}
+    		if [ -f ${ADir}/${subj}/${FuncDir}/${FuncName}_res.nii.gz ]
+			then
+				echo "CCS nuisance regression of functional images for ${subj} has been done!" >> ${logfile}
+				rm -f ${errfile}
+			else
+				mv ${logfile} ${errfile}
+				echo "ERROR: nuisance regression stopped with errors. Please check the logfile ccs_04_funcnuisance.error for ${subj}" >&2
+                exit 1
+			fi
+		else
+			echo "SKIPPING: Nuisance regression has been done for ${subj}"
+		fi
+	fi     
+	}&
+}	
+done
+wait
+
+## Final steps of band-pass filtering, detrending and projecting 4D images onto StandardSurface surfaces as well as spatial smoothing in both volume and surface spaces
+echo "====================$( date )===================="
+echo "CCS FINAL PREPROCESSING STEPS OF FUNCTIONAL IMAGES ..." 
+done_refine_anatreg=${DoRefine}
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {} && exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+	if [ ! -f ${ADir}/${subj}/scripts/ccs_04_funcnuisance.log ]
+	then
+		echo "ERROR: Please check and run nuisance regression step for ${subj} first ..." >&2
+	else
+        logfile=${ADir}/${subj}/scripts/ccs_05_funcpreproc_final.log
+        errfile=${ADir}/${subj}/scripts/ccs_05_funcpreproc_final.error
+        trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+        if [ ! -f ${logfile} ]
+        then
+			echo "-->RUNNING: Final preprocessing steps of functional images for ${subj}"
+			echo "=================================================" >> ${logfile}
+            echo "CCS $( date ) " >> ${logfile}
+			echo "Running final preprocessing steps of functional images for ${subj} ..." >> ${logfile}
+            echo "=================================================" >> ${logfile}
+			${ScriptDir}/ccs_05_funcpreproc_final_nofilt.sh ${subj} ${ADir} ${FuncName} ${AnatDir} ${FuncDir} ${done_refine_anatreg} ${StandardEPI} ${StandardSurface} >> ${logfile}
+        	${ScriptDir}/ccs_05_funcpreproc_final.sh ${subj} ${ADir} ${FuncName} ${AnatDir} ${FuncDir} ${done_refine_anatreg} ${StandardEPI} ${StandardSurface} ${BandLow} ${BandHigh} >> ${logfile}
+			if [ -f ${ADir}/${subj}/${FuncDir}/${FuncName}.nofilt.sm0.mni152.nii.gz ]
+			then
+				echo "CCS final preprocessing steps of functional images for ${subj} have been done!" >> ${logfile}
+				rm -f ${errfile}
+			else
+				mv ${logfile} ${errfile}
+				echo "ERROR: final preprocessing steps stopped with errors. Please check the logfile ccs_05_funcpreproc_final.error for ${subj}" >&2
+			fi
+		fi
+	fi
+	}&
+}
+done
+wait
+
+exit 0

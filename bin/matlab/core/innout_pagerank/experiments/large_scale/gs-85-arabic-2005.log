@@ -1,0 +1,52 @@
+Parameters: 
+   graphfile = /var/tmp/dgleich/data/arabic-2005-trans
+      output = none
+         alg = gs
+       alpha = 0.85
+         tol = 1e-07
+       maxit = 10000
+
+nodes = 22744080
+edges = 639999458
+gs(0.8500,0,0) with tol=1.000000e-07 and maxit= 10000 iterations
+   gs : iter =      1 ; delta = 2.000000e+00 ; diff = 1.195939e+00 ; dt =    13.7 sec ; nmult =      1
+   gs : iter =      2 ; delta = 2.000000e+00 ; diff = 2.957385e-01 ; dt =    27.2 sec ; nmult =      2
+   gs : iter =      3 ; delta = 2.000000e+00 ; diff = 9.418785e-02 ; dt =    40.8 sec ; nmult =      3
+   gs : iter =      4 ; delta = 2.000000e+00 ; diff = 4.440959e-02 ; dt =    54.3 sec ; nmult =      4
+   gs : iter =      5 ; delta = 2.000000e+00 ; diff = 2.498513e-02 ; dt =    67.9 sec ; nmult =      5
+   gs : iter =      6 ; delta = 2.000000e+00 ; diff = 1.509215e-02 ; dt =    81.4 sec ; nmult =      6
+   gs : iter =      7 ; delta = 2.000000e+00 ; diff = 9.472270e-03 ; dt =    94.9 sec ; nmult =      7
+   gs : iter =      8 ; delta = 2.000000e+00 ; diff = 6.098363e-03 ; dt =   108.4 sec ; nmult =      8
+   gs : iter =      9 ; delta = 2.000000e+00 ; diff = 3.992939e-03 ; dt =   121.9 sec ; nmult =      9
+   gs : iter =     10 ; delta = 2.000000e+00 ; diff = 2.645806e-03 ; dt =   135.4 sec ; nmult =     10
+   gs : iter =     11 ; delta = 2.000000e+00 ; diff = 1.771200e-03 ; dt =   149.0 sec ; nmult =     11
+   gs : iter =     12 ; delta = 2.000000e+00 ; diff = 1.196204e-03 ; dt =   162.5 sec ; nmult =     12
+   gs : iter =     13 ; delta = 2.000000e+00 ; diff = 8.129822e-04 ; dt =   176.1 sec ; nmult =     13
+   gs : iter =     14 ; delta = 2.000000e+00 ; diff = 5.553031e-04 ; dt =   189.6 sec ; nmult =     14
+   gs : iter =     15 ; delta = 2.000000e+00 ; diff = 3.810872e-04 ; dt =   203.1 sec ; nmult =     15
+   gs : iter =     16 ; delta = 2.000000e+00 ; diff = 2.624225e-04 ; dt =   217.3 sec ; nmult =     16
+   gs : iter =     17 ; delta = 2.000000e+00 ; diff = 1.813776e-04 ; dt =   230.8 sec ; nmult =     17
+   gs : iter =     18 ; delta = 2.000000e+00 ; diff = 1.257372e-04 ; dt =   244.4 sec ; nmult =     18
+   gs : iter =     19 ; delta = 2.000000e+00 ; diff = 8.743678e-05 ; dt =   257.9 sec ; nmult =     19
+   gs : iter =     20 ; delta = 2.000000e+00 ; diff = 6.092059e-05 ; dt =   271.4 sec ; nmult =     20
+   gs : iter =     21 ; delta = 2.000000e+00 ; diff = 4.254625e-05 ; dt =   284.9 sec ; nmult =     21
+   gs : iter =     22 ; delta = 2.000000e+00 ; diff = 2.974865e-05 ; dt =   298.5 sec ; nmult =     22
+   gs : iter =     23 ; delta = 2.000000e+00 ; diff = 2.084598e-05 ; dt =   312.1 sec ; nmult =     23
+   gs : iter =     24 ; delta = 2.000000e+00 ; diff = 1.461903e-05 ; dt =   325.7 sec ; nmult =     24
+   gs : iter =     25 ; delta = 2.000000e+00 ; diff = 1.027563e-05 ; dt =   339.3 sec ; nmult =     25
+   gs : iter =     26 ; delta = 2.000000e+00 ; diff = 7.225668e-06 ; dt =   352.8 sec ; nmult =     26
+   gs : iter =     27 ; delta = 2.000000e+00 ; diff = 5.091648e-06 ; dt =   366.4 sec ; nmult =     27
+   gs : iter =     28 ; delta = 2.000000e+00 ; diff = 3.589497e-06 ; dt =   379.9 sec ; nmult =     28
+   gs : iter =     29 ; delta = 2.000000e+00 ; diff = 2.536239e-06 ; dt =   393.4 sec ; nmult =     29
+   gs : iter =     30 ; delta = 2.000000e+00 ; diff = 1.791162e-06 ; dt =   407.0 sec ; nmult =     30
+   gs : iter =     31 ; delta = 2.000000e+00 ; diff = 1.268628e-06 ; dt =   420.8 sec ; nmult =     31
+   gs : iter =     32 ; delta = 2.000000e+00 ; diff = 8.978198e-07 ; dt =   434.6 sec ; nmult =     32
+   gs : iter =     33 ; delta = 2.000000e+00 ; diff = 6.371226e-07 ; dt =   448.2 sec ; nmult =     33
+   gs : iter =     34 ; delta = 2.000000e+00 ; diff = 4.518022e-07 ; dt =   461.7 sec ; nmult =     34
+   gs : iter =     35 ; delta = 2.000000e+00 ; diff = 3.213403e-07 ; dt =   475.3 sec ; nmult =     35
+   gs : iter =     36 ; delta = 2.000000e+00 ; diff = 2.280798e-07 ; dt =   488.9 sec ; nmult =     36
+   gs : iter =     37 ; delta = 2.000000e+00 ; diff = 1.626210e-07 ; dt =   502.4 sec ; nmult =     37
+   gs : iter =     38 ; delta = 2.000000e+00 ; diff = 1.156284e-07 ; dt =   516.6 sec ; nmult =     38
+   gs : iter =     39 ; delta = 4.617860e-08 ; diff = 8.253060e-08 ; dt =   530.1 sec ; nmult =     40
+gs : solved pagerank(a=0.8500) in    39 sweeps and    40 mults to 1.000000e-07 tol
+output norm: 9.9999999999999989e-01

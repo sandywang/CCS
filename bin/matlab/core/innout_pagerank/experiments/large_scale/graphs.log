@@ -1,0 +1,8 @@
+Parameters: 
+   graphfile = /var/tmp/dgleich/data/graphs
+      output = none
+         alg = inout
+       alpha = 0.99
+         tol = 1e-07
+       maxit = 10000
+

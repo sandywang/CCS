@@ -1,0 +1,34 @@
+8
+
+dir
+8
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java/trunk/src
+svn+ssh://icme-superlu.stanford.edu/usr/local/svn/cads-java
+
+
+
+2007-10-06T04:35:04.089212Z
+8
+Nathan Sakunkoo
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+bf858b66-2738-0410-8cd7-81738de7703c
+
+edu
+dir
+
+org
+dir
+

@@ -1,0 +1,268 @@
+#!/usr/bin/env bash
+#################################################################################
+## SCRIPT TO RUN GENERAL RESTING-STATE PREPROCESSING
+##
+## Written by Xindi Wang.
+## Email: sandywang.rest@gmail.com
+## 
+#################################################################################
+
+# ini parser function
+function GetPara()
+{
+    if [[ ! -f $1 || $# -ne 3 ]];
+    then
+        return 1
+    fi
+
+    INIFile=$1
+
+    BlockName=$2
+    FieldName=$3
+    
+    CatchFlag=0
+
+    cat $INIFile | while read line
+    do
+        if [[ "$line" = "[$BlockName]" ]]
+        then
+            CatchFlag=1
+            continue
+        fi
+
+        if [[ $CatchFlag -eq 1 ]]
+        then
+            OverFlag=$( echo $line \
+                | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}' )
+            if [[ $OverFlag -eq 1 ]]
+            then
+                break
+            fi
+            
+            IgnoreFlag=$( echo $line \
+                | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}' )
+
+            if [[ $IgnoreFlag -eq 1 ]]
+            then
+                continue
+            fi
+
+            field=$( echo $line  | awk -F= '{gsub(" |\t", "", $1); print $1}' )
+            value=$( echo $line  | awk -F= '{gsub(" |\t", "", $2); print $2}' )
+            if [[ "$FieldName" = "$field" ]]
+            then
+                echo $value
+                break
+            fi
+        fi
+    done
+    return $value
+}
+
+#################################################################################
+## PARAMETERS
+#################################################################################
+ADir=$( pwd )
+SubjListName=subject.list
+
+AnatDir=anat
+AnatName=mprage
+
+DoGPU=false
+
+StandardHead=${FSLDIR}/data/standard/MNI152_T1_2mm.nii.gz
+StandardBrain=${FSLDIR}/data/standard/MNI152_T1_2mm_brain.nii.gz
+
+DoRefine=false
+StandardRefine=
+
+while (( $# > 0 )) ; 
+do
+    case "$1" in
+        "-config")
+            shift
+            Config=$1
+            shift
+            ;;
+        "-analysis_dir")
+            shift
+            ADir=$1
+            shift
+            ;;
+        "-subj_list")
+            shift
+            SubjListName=$1
+            shift
+            ;;
+        "-anat_dir")
+            shift
+            AnatDir=$1
+            shift
+            ;;
+        "-anat_name")
+            shift
+            AnatName=$1
+            shift
+            ;;
+        "-gpu")
+            DoGPU=true
+            shift
+            ;;
+        "-head")
+            shift
+            StandardHead=$1
+            shift
+            ;;
+        "-brain")
+            shift
+            StandardBrain=$1
+            shift
+            ;;
+        "-refine")
+            DoRefine=true
+            shift
+            StandardRefine=$1
+            shift
+            ;;
+        *)
+            break
+            ;;
+        -*)
+            echo "ERROR: Unknown option '$1'"
+            exit 1
+            break
+            ;;
+    esac
+done
+
+if [[ -n $Config ]]
+then
+    AnatDir=$( GetPara $Config "Anatomical Directory" name )
+    AnatName=$( GetPara $Config "Anatomical Filename" name )
+    DoGPU=$( GetPara $Config GPU execute | tr [:upper:] [:lower:] )
+    StandardHead=$( GetPara $Config "Anatomical Template" head )
+    StandardBrain=$( GetPara $Config "Anatomical Template" brain )
+    DoRefine=$( GetPara $Config "Refine Template" execute | tr [:upper:] [:lower:] )
+    StandardRefine=$( GetPara $Config "Refine Template" template )
+fi
+
+#Directory where scripts are located
+ScriptDir=$CCSDIR/bin
+
+#Full path to the list of subjs
+SubjList=${ADir}/scripts/${SubjListName}
+
+#################################################################################
+##---START OF SCRIPT-----------------------------------------------------------##
+#################################################################################
+#set -e
+echo "====================$( date )===================="
+echo "CCS anatomical images processing ..." 
+
+## Get subjs to run
+subjs=$( cat ${SubjList} )
+
+## SUBJECT LOOP
+
+## Segmenting and reconstructing surfaces: anatomical images
+echo "====================$( date )===================="
+echo "Surface reconstraction processing ... (May take more than 24 hours for one subject)"
+
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {};killall -s SIGTERM -u $USER recon-all;exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+    set -e
+	if [ ! -f ${ADir}/${subj}/mri/brainmask.mgz ]
+	then
+		echo "WARNNING: ${subj} may not be checked the skull stripping for quality control!!" >&2
+        exit 1
+	fi
+	logfile=${ADir}/${subj}/scripts/ccs_01_anatsurfrecon.log
+	errfile=${ADir}/${subj}/scripts/ccs_01_anatsurfrecon.error
+    trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+	if [ ! -f ${logfile} ]
+	then
+		echo "-->RUNNING: surface reconstruction for ${subj}"
+   		echo "=================================================" >> ${logfile}
+		echo "CCS $( date ) " >> ${logfile}
+		echo "Segmenting and reconstructing cortical surfaces for ${subj} ..." >> ${logfile}
+		echo "=================================================" >> ${logfile}
+		${ScriptDir}/ccs_01_anatsurfrecon.sh ${subj} ${ADir} ${AnatName} ${AnatDir} ${DoGPU} >> ${logfile}
+		if [ -f ${ADir}/${subj}/scripts/recon-all.done ]
+		then
+			echo CCS reconstruction for ${subj} has been done! >> ${logfile}
+			rm -f ${errfile}
+		else
+			echo "ERROR: reconstruction stopped with errors! Please check the ccs_01_anatsurfrecon.error and recon-all.error for ${subj}" >&2
+			mv ${logfile} ${errfile} 2>/dev/null
+            exit 1
+		fi
+	else
+		echo "-->Finished: Segmentation and surface reconstruction for ${subj}"
+	fi
+	}&
+}
+done
+wait
+
+## Registering anatomical images
+echo "====================$( date )===================="
+echo "Registering anatomical images to MNI152 template"
+num_of_queue=0
+trap 'jobs -p|xargs -i ccs_killall -15 {} && exit 1' INT KILL TERM
+for subj in ${subjs}
+do
+{
+	while [[ $num_of_queue -ge $CCS_MAX_QUEUE ]]
+	do
+		wait
+		num_of_queue=0
+	done
+	let num_of_queue=num_of_queue+1
+
+	{
+	if [ ! -f ${ADir}/${subj}/scripts/ccs_01_anatsurfrecon.log ]
+	then
+		echo "ERROR: Please check and run the surface reconstraction step for ${subj} first..." >&2
+        exit 1
+	else
+	    logfile=${ADir}/${subj}/scripts/ccs_02_anatregister.log
+	    errfile=${ADir}/${subj}/scripts/ccs_02_anatregister.error
+        trap "mv -f ${logfile} ${errfile} 2>/dev/null; exit 1" INT KILL TERM
+       	if [ ! -f ${logfile} ]
+       	then
+        	echo "-->RUNNING: subj ${subj} registrating anatomical images to MNI152 template"
+    		echo "=================================================" >> ${logfile}
+	        echo "CCS $( date ) " >> ${logfile}
+			echo "Registering anatomical images to MNI152 template for ${subj} ..." >> ${logfile}
+	        echo "=================================================" >> ${logfile}
+			${ScriptDir}/ccs_02_anatregister.sh ${subj} ${ADir} ${AnatDir} ${StandardHead} ${StandardBrain} >> ${logfile}
+			if [ -f ${ADir}/${subj}/${AnatDir}/reg/highres2standard_warp.nii.gz ] 
+			then
+				echo "CCS registration of anatomical images for ${subj} has been done!" >> ${logfile}
+				rm -f ${errfile}
+			else
+				mv ${logfile} ${errfile}
+				echo "ERROR: registeratin stopped with errors! Please check the logfile ccs_02_anatregister.error for ${subj}" >&2
+                exit 1
+			fi
+		else
+			echo "-->Finished: Registration for ${subj}"
+		fi	
+	fi
+	}&
+}
+done
+wait
+
+exit 0

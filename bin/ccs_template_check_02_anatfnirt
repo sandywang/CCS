@@ -1,0 +1,173 @@
+#!/usr/bin/env bash
+#################################################################################
+## SCRIPT TO RUN GENERAL RESTING-STATE PREPROCESSING
+##
+## Written by Xindi Wang.
+## Email: sandywang.rest@gmail.com
+## 
+#################################################################################
+
+# ini parser function
+function GetPara()
+{
+    if [[ ! -f $1 || $# -ne 3 ]];
+    then
+        return 1
+    fi
+
+    INIFile=$1
+
+    BlockName=$2
+    FieldName=$3
+    
+    CatchFlag=0
+
+    cat $INIFile | while read line
+    do
+        if [[ "$line" = "[$BlockName]" ]]
+        then
+            CatchFlag=1
+            continue
+        fi
+
+        if [[ $CatchFlag -eq 1 ]]
+        then
+            OverFlag=$( echo $line \
+                | awk 'BEGIN{ret=0} /^\[.*\]$/{ret=1} END{print ret}' )
+            if [[ $OverFlag -eq 1 ]]
+            then
+                break
+            fi
+            
+            IgnoreFlag=$( echo $line \
+                | awk 'BEGIN{ret=0} /^#/{ret=1} /^$/{ret=1} END{print ret}' )
+
+            if [[ $IgnoreFlag -eq 1 ]]
+            then
+                continue
+            fi
+
+            field=$( echo $line  | awk -F= '{gsub(" |\t", "", $1); print $1}' )
+            value=$( echo $line  | awk -F= '{gsub(" |\t", "", $2); print $2}' )
+            if [[ "$FieldName" = "$field" ]]
+            then
+                echo $value
+                break
+            fi
+        fi
+    done
+    return $value
+}
+
+#################################################################################
+## PARAMETERS
+#################################################################################
+ADir=$( pwd )
+SubjListName=subject.list
+
+AnatDir=anat
+StandardBrain=${FSLDIR}/data/standard/MNI152_T1_2mm_brain.nii.gz
+DoRefine=false
+
+while (( $# > 0 )) ; 
+do
+    case "$1" in
+        "-config")
+            shift
+            Config=$1
+            shift
+            ;;
+        "-analysis_dir")
+            shift
+            ADir=$1
+            shift
+            ;;
+        "-subj_list")
+            shift
+            SubjListName=$1
+            shift
+            ;;
+        "-anat_dir")
+            shift
+            AnatDir=$1
+            shift
+            ;;
+        "-brain")
+            shift
+            StandardBrain=$1
+            shift
+            ;;
+        "-refine")
+            DoRefine=true
+            shift
+            StandardRefine=$1
+            shift
+            ;;
+        *)
+            break
+            ;;
+        -*)
+            echo "ERROR: Unknown option '$1'"
+            exit 1
+            break
+            ;;
+    esac
+done
+
+if [[ -n $Config ]]
+then
+    AnatDir=$( GetPara $Config "Anatomical Directory" name )
+    StandardBrain=$( GetPara $Config "Anatomical Template" brain )
+    DoRefine=$( GetPara $Config "Refine Template" execute | tr [:upper:] [:lower:] )
+fi
+
+#Directory where scripts are located
+ScriptDir=$CCSDIR/bin
+
+#Full path to the list of subjs
+SubjList=${ADir}/scripts/${SubjListName}
+
+#################################################################################
+##---START OF SCRIPT-----------------------------------------------------------##
+#################################################################################
+set -e
+trap 'mv ${logfile} ${errfile} 2>/dev/null;ccs_killall -15 $$;exit 1' INT KILL TERM
+subjs=$( cat ${SubjList} )
+
+## Quality assurances of spatial normalization
+done_anatfnirt_list=${ADir}/scripts/done_anatfnirt.list
+check_anatfnirt_list=${ADir}/scripts/check_anatfnirt.list
+echo "====================$( date )===================="
+echo "Generate quality control figures for registration"
+
+for subj in ${subjs}
+do
+	logfile=${ADir}/${subj}/scripts/ccs_02_anatcheck_fnirt.log
+	errfile=${ADir}/${subj}/scripts/ccs_02_anatcheck_fnirt.error
+	if [[ ! -f ${logfile} ]]
+	then
+        if [[ ! -f ${errfile} ]]
+        then
+		    echo "check surface reconstraction quality for ${subj}" > ${logfile}
+		    echo ${subj} >> ${done_anatfnirt_list}
+		    echo "-->CHECK: ${subj} ( new )."
+        else
+            mv ${errfile} ${logfile}
+		    echo "-->CHECK: ${subj} ( again )."
+        fi
+	else
+		echo "-->CHECK: ${subj} ( again )."
+	fi
+    rm -f ${ADir}/${subj}/${AnatDir}/reg/vcheck/fnirt_highres2standard.png
+done
+
+if [[ -f ${done_anatfnirt_list} ]]
+then
+	${ScriptDir}/ccs_02_anatcheck_fnirt.sh ${ADir} ${done_anatfnirt_list} ${AnatDir} ${StandardBrain} ${DoRefine}
+	echo "Please find the check figures in subjs' anatomical registration \"vheck\" directory "
+else
+    echo "No subjs from ${SubjList} can be check!"
+fi
+
+echo All Done.
+exit 0

@@ -1,0 +1,82 @@
+Parameters: 
+   graphfile = /var/tmp/dgleich/data/sk-2005
+      output = none
+         alg = power
+       alpha = 0.85
+         tol = 1e-07
+       maxit = 10000
+
+nodes = 50636154
+edges = 1949412601
+power : iter =      1 ; delta = 1.135427e+00 ; dt =    62.5 sec
+power : iter =      2 ; delta = 4.246098e-01 ; dt =   125.3 sec
+power : iter =      3 ; delta = 1.712268e-01 ; dt =   188.1 sec
+power : iter =      4 ; delta = 8.321417e-02 ; dt =   250.9 sec
+power : iter =      5 ; delta = 4.814391e-02 ; dt =   313.7 sec
+power : iter =      6 ; delta = 3.135423e-02 ; dt =   376.5 sec
+power : iter =      7 ; delta = 2.188143e-02 ; dt =   439.4 sec
+power : iter =      8 ; delta = 1.595676e-02 ; dt =   502.1 sec
+power : iter =      9 ; delta = 1.185695e-02 ; dt =   566.1 sec
+power : iter =     10 ; delta = 8.995449e-03 ; dt =   635.0 sec
+power : iter =     11 ; delta = 6.933495e-03 ; dt =   697.8 sec
+power : iter =     12 ; delta = 5.395816e-03 ; dt =   760.6 sec
+power : iter =     13 ; delta = 4.244331e-03 ; dt =   823.4 sec
+power : iter =     14 ; delta = 3.359969e-03 ; dt =   886.2 sec
+power : iter =     15 ; delta = 2.672129e-03 ; dt =   949.0 sec
+power : iter =     16 ; delta = 2.137749e-03 ; dt =  1011.9 sec
+power : iter =     17 ; delta = 1.710564e-03 ; dt =  1074.7 sec
+power : iter =     18 ; delta = 1.379650e-03 ; dt =  1137.5 sec
+power : iter =     19 ; delta = 1.112730e-03 ; dt =  1200.2 sec
+power : iter =     20 ; delta = 9.024894e-04 ; dt =  1263.0 sec
+power : iter =     21 ; delta = 7.338743e-04 ; dt =  1325.8 sec
+power : iter =     22 ; delta = 5.974564e-04 ; dt =  1388.6 sec
+power : iter =     23 ; delta = 4.879214e-04 ; dt =  1451.4 sec
+power : iter =     24 ; delta = 3.996079e-04 ; dt =  1514.2 sec
+power : iter =     25 ; delta = 3.276633e-04 ; dt =  1577.0 sec
+power : iter =     26 ; delta = 2.692343e-04 ; dt =  1639.8 sec
+power : iter =     27 ; delta = 2.215326e-04 ; dt =  1702.6 sec
+power : iter =     28 ; delta = 1.824182e-04 ; dt =  1765.4 sec
+power : iter =     29 ; delta = 1.503938e-04 ; dt =  1828.2 sec
+power : iter =     30 ; delta = 1.241130e-04 ; dt =  1891.0 sec
+power : iter =     31 ; delta = 1.025007e-04 ; dt =  1953.8 sec
+power : iter =     32 ; delta = 8.479339e-05 ; dt =  2016.6 sec
+power : iter =     33 ; delta = 7.011138e-05 ; dt =  2079.4 sec
+power : iter =     34 ; delta = 5.806892e-05 ; dt =  2142.2 sec
+power : iter =     35 ; delta = 4.809767e-05 ; dt =  2205.1 sec
+power : iter =     36 ; delta = 3.987297e-05 ; dt =  2267.9 sec
+power : iter =     37 ; delta = 3.309756e-05 ; dt =  2330.7 sec
+power : iter =     38 ; delta = 2.745413e-05 ; dt =  2393.5 sec
+power : iter =     39 ; delta = 2.281143e-05 ; dt =  2456.3 sec
+power : iter =     40 ; delta = 1.896213e-05 ; dt =  2519.1 sec
+power : iter =     41 ; delta = 1.577213e-05 ; dt =  2582.0 sec
+power : iter =     42 ; delta = 1.314208e-05 ; dt =  2644.8 sec
+power : iter =     43 ; delta = 1.094989e-05 ; dt =  2707.6 sec
+power : iter =     44 ; delta = 9.134273e-06 ; dt =  2770.4 sec
+power : iter =     45 ; delta = 7.623155e-06 ; dt =  2833.2 sec
+power : iter =     46 ; delta = 6.365903e-06 ; dt =  2896.0 sec
+power : iter =     47 ; delta = 5.320780e-06 ; dt =  2958.8 sec
+power : iter =     48 ; delta = 4.449355e-06 ; dt =  3021.6 sec
+power : iter =     49 ; delta = 3.722174e-06 ; dt =  3084.5 sec
+power : iter =     50 ; delta = 3.118488e-06 ; dt =  3147.3 sec
+power : iter =     51 ; delta = 2.613637e-06 ; dt =  3210.1 sec
+power : iter =     52 ; delta = 2.193554e-06 ; dt =  3272.9 sec
+power : iter =     53 ; delta = 1.841042e-06 ; dt =  3341.8 sec
+power : iter =     54 ; delta = 1.545291e-06 ; dt =  3411.9 sec
+power : iter =     55 ; delta = 1.297530e-06 ; dt =  3474.8 sec
+power : iter =     56 ; delta = 1.089477e-06 ; dt =  3537.6 sec
+power : iter =     57 ; delta = 9.152798e-07 ; dt =  3600.4 sec
+power : iter =     58 ; delta = 7.691004e-07 ; dt =  3663.2 sec
+power : iter =     59 ; delta = 6.461127e-07 ; dt =  3726.1 sec
+power : iter =     60 ; delta = 5.431452e-07 ; dt =  3788.9 sec
+power : iter =     61 ; delta = 4.565387e-07 ; dt =  3851.6 sec
+power : iter =     62 ; delta = 3.840356e-07 ; dt =  3914.4 sec
+power : iter =     63 ; delta = 3.230238e-07 ; dt =  3977.2 sec
+power : iter =     64 ; delta = 2.717936e-07 ; dt =  4040.0 sec
+power : iter =     65 ; delta = 2.286690e-07 ; dt =  4102.8 sec
+power : iter =     66 ; delta = 1.924289e-07 ; dt =  4165.6 sec
+power : iter =     67 ; delta = 1.619547e-07 ; dt =  4228.4 sec
+power : iter =     68 ; delta = 1.363339e-07 ; dt =  4291.2 sec
+power : iter =     69 ; delta = 1.147760e-07 ; dt =  4354.0 sec
+power : iter =     70 ; delta = 9.662542e-08 ; dt =  4416.8 sec
+power : solved pagerank(a=0.8500) in    70 mults to 1.000000e-07 tol
+output norm: 1.0000000000000000e+00

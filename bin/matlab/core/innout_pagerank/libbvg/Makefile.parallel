@@ -1,0 +1,60 @@
+#
+# Makefile for PCE PageRank experiments.
+#
+# David Gleich
+# Copyright, Stanford University, 2008
+# 24 Jaunary 2008
+#
+
+# setup MPI
+CC := mpicc
+CXX := mpicxx
+
+#
+# Makefile for random alpha PageRank experiments with libbvg
+#
+# David Gleich
+# Copyright, Stanford University, 2008
+# 4 February 2008
+#
+
+# setup paths and sources
+LIBBVG_SRC_DIR := src
+LIBBVG_INCLUDE := -Iinclude -Isrc -Iboost
+LIBBVG_SRC := bitfile.c bvgraph.c bvgraph_iterator.c properties.c util.c
+LIBBVG_FULL_SRC := $(addprefix $(LIBBVG_SRC_DIR)/,$(LIBBVG_SRC))
+LIBBVG_FULL_OBJ := $(LIBBVG_FULL_SRC:.c=.o)
+
+DEPS := rapr_common.hpp
+
+PGQPAGERANKNAME := pgqrapr
+GQPAGERANKOBJS := gqrapr.o 
+PMCPAGERANKNAME := pmcrapr
+MCPAGERANKOBJS := mcrapr.o 
+
+INCLUDE := $(INCLUDE) $(LIBBVG_INCLUDE)
+
+# setup flags
+CFLAGS := $(CFLAGS) -Wall -O2 $(LIBBVG_INCLUDE)
+CXXFLAGS := $(CXXFLAGS) -Wall -O2 $(LIBBVG_INCLUDE) -DRAPR_MPI
+
+# declare phony targets
+.PHONY: all clean 
+
+all: clean $(PMCPAGERANKNAME) $(PGQPAGERANKNAME)
+
+$(PMCPAGERANKNAME) : $(LIBBVG_FULL_SRC:.c=.o) $(MCPAGERANKOBJS) $(DEPS)
+	$(CXX) $(LIBBVG_FULL_SRC:.c=.o) $(MCPAGERANKOBJS) -o $(PMCPAGERANKNAME)
+	
+$(PGQPAGERANKNAME) : $(LIBBVG_FULL_SRC:.c=.o) $(GQPAGERANKOBJS) $(DEPS)
+	$(CXX) $(LIBBVG_FULL_SRC:.c=.o) $(GQPAGERANKOBJS) -o $(PGQPAGERANKNAME)	    	
+		
+clean:
+	$(RM) $(MCPAGERANKOBJS) $(GQPAGERANKOBJS)
+		
+clean_all:
+	$(RM) $(LIBBVG_FULL_SRC:.c=.o) \
+		$(PMCPAGERANKNAME) $(MCPAGERANKOBJS) \
+        $(PGQPAGERANKNAME) $(GQPAGERANKOBJS) \
+
+	

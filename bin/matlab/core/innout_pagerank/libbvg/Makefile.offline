@@ -1,0 +1,44 @@
+#
+# Makefile for random alpha PageRank experiments with libbvg
+#
+# David Gleich
+# Copyright, Stanford University, 2008
+# 4 February 2008
+#
+
+# setup paths and sources
+LIBBVG_SRC_DIR := src
+LIBBVG_INCLUDE := -Iinclude -Isrc -Iboost
+LIBBVG_SRC := bitfile.c bvgraph.c bvgraph_iterator.c properties.c util.c
+LIBBVG_FULL_SRC := $(addprefix $(LIBBVG_SRC_DIR)/,$(LIBBVG_SRC))
+LIBBVG_FULL_OBJ := $(LIBBVG_FULL_SRC:.c=.o)
+
+MCPAGERANKNAME := mcrapr_offline
+MCPAGERANKOBJS := mcrapr.o
+PCEPAGERANKNAME := pcerapr_beta_offline
+PCEPAGERANKOBJS := pcerapr_beta.o
+
+INCLUDE := $(INCLUDE) $(LIBBVG_INCLUDE)
+
+# setup flags
+CFLAGS := $(CFLAGS) -Wall -O2 $(LIBBVG_INCLUDE)
+CXXFLAGS := $(CXXFLAGS) -Wall -O2 $(LIBBVG_INCLUDE) -DRAPR_OFFLINE
+
+# declare phony targets
+.PHONY: all clean 
+
+all: $(MCPAGERANKNAME) $(PCEPAGERANKNAME) clean
+
+$(MCPAGERANKNAME) : $(LIBBVG_FULL_SRC:.c=.o) $(PCEPAGERANKOBJS)
+	$(CXX) $(LIBBVG_FULL_SRC:.c=.o) $(MCPAGERANKOBJS) -o $(MCPAGERANKNAME)
+	
+$(PCEPAGERANKNAME) : $(LIBBVG_FULL_SRC:.c=.o) $(MCPAGERANKOBJS)
+	$(CXX) $(LIBBVG_FULL_SRC:.c=.o) $(PCEPAGERANKOBJS) -o $(PCEPAGERANKNAME)	
+
+clean:
+	$(RM) $(MCPAGERANKOBJS) $(PCEPAGERANKOBJS) 
+		
+clean_all:
+	$(RM) $(LIBBVG_FULL_SRC:.c=.o) \
+		$(MCPAGERANKOBJS) $(MCPAGERANKOBJS) \
+		$(MCPAGERANKNAME) $(PCEPAGERANKNAME)	

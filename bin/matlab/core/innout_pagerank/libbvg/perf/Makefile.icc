@@ -1,0 +1,46 @@
+# performance test makefiles
+# for bvgraph tests with openmp and transposed graph files
+
+# David Gleich
+# Copyright, Stanford University, 2008
+
+LIBBVG_SRC_DIR := ../src
+LIBBVG_INCLUDE_DIR := ../include
+LIBBVG_INCLUDE := -I$(LIBBVG_INCLUDE_DIR) -I$(LIBBVG_SRC_DIR)
+LIBBVG_SRC := bitfile.c bvgraph.c bvgraph_iterator.c properties.c util.c bvgraphfun.c bvgraphomp.c
+LIBBVG_FULL_SRC := $(addprefix $(LIBBVG_SRC_DIR)/,$(LIBBVG_SRC))
+LIBBVG_FULL_OBJ := $(LIBBVG_FULL_SRC:.c=.o)
+
+INCLUDE := $(INCLUDE) $(LIBBVG_INCLUDE) -I../../sparsehash
+
+CC := icc
+CXX := icpc
+
+CFLAGS := $(CFLAGS) -openmp -Wall -fast $(INCLUDE) -no-multibyte-chars -DBVGRAPH_VERBOSE
+CXXFLAGS := $(CXXFLAGS) -openmp  -Wall -fast $(INCLUDE) -no-multibyte-chars -DBVGRAPH_VERBOSE
+
+# declare phony targets
+.PHONY: all clean 
+
+#all: transmult ompmult omptransmult
+all: transmult ompmult ompmultlib
+
+transmult : $(LIBBVG_FULL_SRC:.c=.o) transmult.o 
+	$(CXX) $(CXXFLAGS) $(LIBBVG_FULL_SRC:.c=.o)  transmult.o -o transmult 
+
+ompmult : $(LIBBVG_FULL_SRC:.c=.o) ompmult.o 
+	$(CXX) $(CXXFLAGS) $(LIBBVG_FULL_SRC:.c=.o)  ompmult.o -o ompmult
+
+ompmultlib : $(LIBBVG_FULL_SRC:.c=.o) ompmultlib.o 
+	$(CXX) $(CXXFLAGS) $(LIBBVG_FULL_SRC:.c=.o)  ompmultlib.o -o ompmultlib
+
+omptransmult : $(LIBBVG_FULL_SRC:.c=.o) omptransmult.o 
+	$(CXX) $(LIBBVG_FULL_SRC:.c=.o)  omptransmult.o -o omptransmult
+		
+clean:
+	$(RM) transmult.o transmult ompmult ompmult.o
+		
+clean_all: clean
+	$(RM) $(LIBBVG_FULL_SRC:.c=.o) \
+	        
+

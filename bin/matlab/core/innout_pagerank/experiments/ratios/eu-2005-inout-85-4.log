@@ -1,0 +1,91 @@
+Parameters: 
+   graphfile = ../../data/eu-2005-trans
+      output = none
+         alg = inout
+       alpha = 0.85
+         tol = 1e-08
+       maxit = 10000
+
+nodes = 862664
+edges = 19235140
+inout(0.8500,0.5000,1.000000e-02) with tol=1.000000e-08 and maxit= 10000 iterations
+inout (outer) : iter =      1 ; odelta = 1.976662e-01 ; dt =     0.7; nmult =      5
+inout (outer) : iter =      2 ; odelta = 5.845378e-02 ; dt =     1.2; nmult =      8
+inout (outer) : iter =      3 ; odelta = 2.658374e-02 ; dt =     1.5; nmult =     10
+inout (outer) : iter =      4 ; odelta = 1.449056e-02 ; dt =     1.8; nmult =     12
+inout (outer) : iter =      5 ; odelta = 1.036131e-02 ; dt =     1.9; nmult =     13
+inout (power) : iter =      6 ; odelta = 7.619383e-03 ; dt =     2.1; nmult =     14
+inout (power) : iter =      7 ; odelta = 5.713278e-03 ; dt =     2.2; nmult =     15
+inout (power) : iter =      8 ; odelta = 4.349102e-03 ; dt =     2.3; nmult =     16
+inout (power) : iter =      9 ; odelta = 3.352741e-03 ; dt =     2.5; nmult =     17
+inout (power) : iter =     10 ; odelta = 2.614985e-03 ; dt =     2.6; nmult =     18
+inout (power) : iter =     11 ; odelta = 2.057529e-03 ; dt =     2.8; nmult =     19
+inout (power) : iter =     12 ; odelta = 1.627869e-03 ; dt =     2.9; nmult =     20
+inout (power) : iter =     13 ; odelta = 1.293005e-03 ; dt =     3.0; nmult =     21
+inout (power) : iter =     14 ; odelta = 1.031039e-03 ; dt =     3.2; nmult =     22
+inout (power) : iter =     15 ; odelta = 8.247290e-04 ; dt =     3.3; nmult =     23
+inout (power) : iter =     16 ; odelta = 6.617591e-04 ; dt =     3.4; nmult =     24
+inout (power) : iter =     17 ; odelta = 5.323733e-04 ; dt =     3.6; nmult =     25
+inout (power) : iter =     18 ; odelta = 4.291729e-04 ; dt =     3.7; nmult =     26
+inout (power) : iter =     19 ; odelta = 3.467549e-04 ; dt =     3.8; nmult =     27
+inout (power) : iter =     20 ; odelta = 2.808418e-04 ; dt =     4.0; nmult =     28
+inout (power) : iter =     21 ; odelta = 2.280602e-04 ; dt =     4.1; nmult =     29
+inout (power) : iter =     22 ; odelta = 1.856176e-04 ; dt =     4.3; nmult =     30
+inout (power) : iter =     23 ; odelta = 1.514157e-04 ; dt =     4.4; nmult =     31
+inout (power) : iter =     24 ; odelta = 1.239352e-04 ; dt =     4.5; nmult =     32
+inout (power) : iter =     25 ; odelta = 1.017075e-04 ; dt =     4.7; nmult =     33
+inout (power) : iter =     26 ; odelta = 8.369971e-05 ; dt =     4.8; nmult =     34
+inout (power) : iter =     27 ; odelta = 6.906376e-05 ; dt =     4.9; nmult =     35
+inout (power) : iter =     28 ; odelta = 5.708035e-05 ; dt =     5.1; nmult =     36
+inout (power) : iter =     29 ; odelta = 4.725652e-05 ; dt =     5.2; nmult =     37
+inout (power) : iter =     30 ; odelta = 3.918522e-05 ; dt =     5.3; nmult =     38
+inout (power) : iter =     31 ; odelta = 3.252284e-05 ; dt =     5.5; nmult =     39
+inout (power) : iter =     32 ; odelta = 2.702762e-05 ; dt =     5.6; nmult =     40
+inout (power) : iter =     33 ; odelta = 2.248009e-05 ; dt =     5.7; nmult =     41
+inout (power) : iter =     34 ; odelta = 1.871299e-05 ; dt =     5.9; nmult =     42
+inout (power) : iter =     35 ; odelta = 1.558943e-05 ; dt =     6.0; nmult =     43
+inout (power) : iter =     36 ; odelta = 1.299634e-05 ; dt =     6.2; nmult =     44
+inout (power) : iter =     37 ; odelta = 1.084106e-05 ; dt =     6.3; nmult =     45
+inout (power) : iter =     38 ; odelta = 9.048675e-06 ; dt =     6.4; nmult =     46
+inout (power) : iter =     39 ; odelta = 7.558721e-06 ; dt =     6.6; nmult =     47
+inout (power) : iter =     40 ; odelta = 6.317692e-06 ; dt =     6.7; nmult =     48
+inout (power) : iter =     41 ; odelta = 5.282905e-06 ; dt =     6.8; nmult =     49
+inout (power) : iter =     42 ; odelta = 4.420256e-06 ; dt =     7.0; nmult =     50
+inout (power) : iter =     43 ; odelta = 3.701325e-06 ; dt =     7.1; nmult =     51
+inout (power) : iter =     44 ; odelta = 3.101829e-06 ; dt =     7.2; nmult =     52
+inout (power) : iter =     45 ; odelta = 2.600303e-06 ; dt =     7.4; nmult =     53
+inout (power) : iter =     46 ; odelta = 2.180747e-06 ; dt =     7.5; nmult =     54
+inout (power) : iter =     47 ; odelta = 1.829756e-06 ; dt =     7.6; nmult =     55
+inout (power) : iter =     48 ; odelta = 1.535594e-06 ; dt =     7.8; nmult =     56
+inout (power) : iter =     49 ; odelta = 1.289246e-06 ; dt =     7.9; nmult =     57
+inout (power) : iter =     50 ; odelta = 1.082748e-06 ; dt =     8.1; nmult =     58
+inout (power) : iter =     51 ; odelta = 9.098323e-07 ; dt =     8.2; nmult =     59
+inout (power) : iter =     52 ; odelta = 7.653840e-07 ; dt =     8.3; nmult =     60
+inout (power) : iter =     53 ; odelta = 6.441414e-07 ; dt =     8.5; nmult =     61
+inout (power) : iter =     54 ; odelta = 5.422496e-07 ; dt =     8.6; nmult =     62
+inout (power) : iter =     55 ; odelta = 4.569197e-07 ; dt =     8.7; nmult =     63
+inout (power) : iter =     56 ; odelta = 3.852649e-07 ; dt =     8.9; nmult =     64
+inout (power) : iter =     57 ; odelta = 3.249369e-07 ; dt =     9.0; nmult =     65
+inout (power) : iter =     58 ; odelta = 2.740755e-07 ; dt =     9.1; nmult =     66
+inout (power) : iter =     59 ; odelta = 2.311887e-07 ; dt =     9.3; nmult =     67
+inout (power) : iter =     60 ; odelta = 1.950235e-07 ; dt =     9.4; nmult =     68
+inout (power) : iter =     61 ; odelta = 1.645240e-07 ; dt =     9.6; nmult =     69
+inout (power) : iter =     62 ; odelta = 1.388020e-07 ; dt =     9.7; nmult =     70
+inout (power) : iter =     63 ; odelta = 1.171099e-07 ; dt =     9.8; nmult =     71
+inout (power) : iter =     64 ; odelta = 9.881332e-08 ; dt =    10.0; nmult =     72
+inout (power) : iter =     65 ; odelta = 8.337895e-08 ; dt =    10.1; nmult =     73
+inout (power) : iter =     66 ; odelta = 7.035850e-08 ; dt =    10.2; nmult =     74
+inout (power) : iter =     67 ; odelta = 5.937377e-08 ; dt =    10.4; nmult =     75
+inout (power) : iter =     68 ; odelta = 5.010609e-08 ; dt =    10.5; nmult =     76
+inout (power) : iter =     69 ; odelta = 4.228667e-08 ; dt =    10.6; nmult =     77
+inout (power) : iter =     70 ; odelta = 3.568896e-08 ; dt =    10.8; nmult =     78
+inout (power) : iter =     71 ; odelta = 3.012175e-08 ; dt =    10.9; nmult =     79
+inout (power) : iter =     72 ; odelta = 2.542399e-08 ; dt =    11.0; nmult =     80
+inout (power) : iter =     73 ; odelta = 2.145966e-08 ; dt =    11.2; nmult =     81
+inout (power) : iter =     74 ; odelta = 1.811417e-08 ; dt =    11.3; nmult =     82
+inout (power) : iter =     75 ; odelta = 1.529078e-08 ; dt =    11.5; nmult =     83
+inout (power) : iter =     76 ; odelta = 1.290798e-08 ; dt =    11.6; nmult =     84
+inout (power) : iter =     77 ; odelta = 1.089690e-08 ; dt =    11.7; nmult =     85
+inout (power) : iter =     78 ; odelta = 9.199502e-09 ; dt =    11.9; nmult =     86
+inout(b=0.5000,it=1.000000e-02) : solved pagerank(a=0.8500) in    86 mults to 1.000000e-08 tol
+output norm: 1.0000000000000000e+00
